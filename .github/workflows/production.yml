@@ -1,0 +1,26 @@
+name: Angular CI Build
+
+on:
+  push:
+    branches:
+      - production # Trigger on push to the 'main' branch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest # Run the job on the latest Ubuntu environment
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4 # Use the checkout action to get your code
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4 # Use the setup-node action to configure Node.js
+        with:
+          node-version: '24.x' # Specify the Node.js version
+      
+      - name: Install dependencies
+        run: npm ci # Use 'npm ci' for clean and consistent dependency installation
+      
+      - name: Run Angular build
+        run: npm run build -- --configuration production # or simply 'ng build --configuration production'
+        # Consider adding a script in package.json like "build:ci": "ng build --configuration production" and running "npm run build:ci"
