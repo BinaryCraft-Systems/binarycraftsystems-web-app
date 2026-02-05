@@ -12,6 +12,41 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4 # Use the checkout action to get your code
+        with:
+          fetch-depth: 2
+
+      - name: Check The File Changes
+        id: version_check
+        run: |
+          echo "Checking file changes..."
+
+          CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD)
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+
+          if [ -z "$CHANGED_FILES" ]; then
+            echo "No changes detected."
+            exit 1
+          fi
+          
+          if ! echo "$CHANGED_FILES" | grep -q "package.json$"; then
+            echo "Package version not modified."
+            exit 1
+          fi
+
+          OLD_VERSION=$(git show HEAD~1:package.json | jq -r '.version')
+          NEW_VERSION=$(jq -r '.version' package.json)
+
+          echo "Old version: $OLD_VERSION"
+          echo "New version: $NEW_VERSION"
+
+          if [ "$OLD_VERSION" = "$NEW_VERSION" ]; then
+            echo "package.json version was not bumped."
+            exit 1
+          fi
+
+          echo "package.json version bumped."
+
       
       - name: Set up Node.js
         uses: actions/setup-node@v4 # Use the setup-node action to configure Node.js
